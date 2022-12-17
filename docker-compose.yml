@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  # Nginx
+  server:
+    build:
+      context: .
+      dockerfile: docker/dockerfiles/nginx.dockerfile
+    container_name: bapforum-server
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8081:8081"
+    restart: always
+    depends_on:
+      - php
+      - mysql
+
+  # PHP
+  php:
+    build:
+      context: .
+      dockerfile: docker/dockerfiles/php.dockerfile
+    container_name: bapforum-php
+    restart: always
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/php.ini
+
+  # MySQL
+  mysql:
+    image: mysql:5.7
+    container_name: bapforum-mysql
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=bap-forum
+      - MYSQL_ROOT_PASSWORD=123456
+
+  # Redis
+  redis:
+    image: "redis:alpine"
+    container_name: bapforum-redis
+    ports:
+      - "6380:6379"
